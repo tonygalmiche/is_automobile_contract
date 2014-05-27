@@ -136,8 +136,4 @@ class is_generate_picking_out(osv.osv_memory):
 
             return result
                                         
-is_generate_picking_out()                
-            
-
-        
-        
+is_generate_picking_out()
