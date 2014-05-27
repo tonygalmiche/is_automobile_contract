@@ -1,4 +1,4 @@
-is_automobile_contract
+InfoSaône / OpenERP - odoo / Gestion des contrats de commandes ouvertes pour l'automobile
 ======================
 
-Gestion des contrats de commandes ouvertes pour l'automobile
+
