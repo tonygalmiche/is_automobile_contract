@@ -120,3 +120,8 @@ msgstr "Date Expédition"
 #: field:is.quotation.line,quantity:0
 msgid "Quantite"
 msgstr "Quantité"
+
+#. module: is_automobile_contract
+#: field:is.picking.out,expedition_date_max:0
+msgid "Date expedition maxi"
+msgstr "Date d'expédition maxi"
