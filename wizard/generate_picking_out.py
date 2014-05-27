@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
+#
+#    Asma BOUSSELMI - CONSULTANT OPENERP CONFIRME
+#
+##############################################################################
 
 import time
 import datetime
@@ -11,12 +19,13 @@ class is_quotation_line(osv.osv_memory):
     _name = "is.quotation.line"
     _description = "Commandes"
     _columns = {
-        'date_livraison': fields.date('Date Livraison', required=True),
-        'date_expedition': fields.date('Date Expedition', required=True),
+        'date_livraison': fields.date('Date Livraison', readonly=True, required=True),
+        'date_expedition': fields.date('Date Expedition', readonly=True, required=True),
         'product_id': fields.many2one('product.product', 'Produit', required=True),
         'picking_id': fields.many2one('is.picking.out', 'Reference', required=True, ondelete='cascade', select=True, readonly=True),
         'quantity': fields.float('Quantite'),
-        'sale_id': fields.integer('ID devis', readonly=True)
+        'sale_id': fields.integer('ID devis', readonly=True),
+        'line_id': fields.integer('ID line', readonly=True),
     }
 
 is_quotation_line()
@@ -34,9 +43,9 @@ class is_generate_picking_out(osv.osv_memory):
     }
 
     def get_quotations(self, cr, uid, partner_id, date_max, context=None):
-        cr.execute("SELECT line.product_id, line.product_uom_qty, sale.date_expedition, sale.date_livraison, sale.id " \
+        cr.execute("SELECT line.product_id, line.product_uom_qty, sale.date_expedition, sale.date_livraison, sale.id, line.id " \
                    "FROM sale_order sale JOIN sale_order_line line ON sale.id = line.order_id " \
-                   "WHERE sale.state = 'draft' and sale.partner_id = %s and sale.date_livraison = %s ", (partner_id,date_max,))
+                   "WHERE sale.state = 'draft' and sale.partner_id = %s and sale.date_livraison <= %s ", (partner_id,date_max,))
         result = cr.fetchall()
         res = []
         if result:
@@ -47,6 +56,7 @@ class is_generate_picking_out(osv.osv_memory):
                     'date_expedition': item[2],
                     'date_livraison': item[3],
                     'sale_id': item[4],
+                    'line_id': item[5],
                 }
                 res.append(vals)
         return res
@@ -58,7 +68,23 @@ class is_generate_picking_out(osv.osv_memory):
         else:
             v['quotation_lines'] = []
         return {'value': v}
-    
+
+    def clean_quotations(self, cr, uid, sale_id, line_id, qty, context=None):
+        order_line_obj = self.pool.get('sale.order.line')
+        order_obj = self.pool.get('sale.order')
+
+        line = order_line_obj.browse(cr, uid, line_id, context=context)
+        if qty < line.product_uom_qty:
+            diff = line.product_uom_qty - qty
+            order_line_obj.write(cr, uid, [line_id], {'product_uom_qty': diff}, context=context)
+        else:
+            order_line_obj.unlink(cr, uid, [line_id], context=context)
+            if len(order_obj.browse(cr, uid, sale_id, context=context).order_line) == 0:
+                order_obj.unlink(cr, uid, [sale_id], context=context)
+            else:
+                pass
+        return True                  
+                
 
     def generate_picking(self, cr, uid, ids, context=None):
         quotation_obj = self.pool.get('is.picking.out')
@@ -75,15 +101,13 @@ class is_generate_picking_out(osv.osv_memory):
 
         if data:
             lines = []
-            sale_ids = []
             for line in quotation_line_obj.browse(cr, uid, data['quotation_lines'], context=context):
                 quotation_line = order_line_obj.product_id_change(cr, uid, ids, 1, line.product_id.id, 0, False, 0, False, '', data['partner_id'][0], False, True, False, False, False, False, context=context)['value']
                 quotation_line.update({'product_id':line.product_id.id, 'product_uom_qty': line.quantity})
                 lines.append([0,False,quotation_line])
-                if not line.sale_id in sale_ids:
-                    sale_ids.append(line.sale_id)
-                else:
-                    continue
+
+                #Nettoyage des devis
+                self.clean_quotations(cr, uid, line.sale_id, line.line_id, line.quantity, context=context)
 
             #create quotation
             quotation = sale_obj.onchange_partner_id(cr, uid, ids, data['partner_id'][0], context=context)['value']
@@ -102,9 +126,6 @@ class is_generate_picking_out(osv.osv_memory):
             quotation.update(quotation_values)
             sale_id = sale_obj.create(cr, uid, quotation, context=context)
             res1 = sale_obj.action_button_confirm(cr, uid, [sale_id], context=context)
-
-            #Supprimer les devis utilisés dans l'assistant pour créer la commande de vente
-            sale_obj.unlink(cr, uid, sale_ids, context=context)
             
 
             # Mettre à jour la date de création de bon de livraison et afficher le bon de livraison
