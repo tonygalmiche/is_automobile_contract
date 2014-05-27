@@ -50,7 +50,7 @@ class is_generate_picking_out(osv.osv_memory):
     def get_quotations(self, cr, uid, partner_id, date_max, context=None):
         cr.execute("SELECT line.product_id, line.product_uom_qty, sale.date_expedition, sale.date_livraison, sale.id, line.id " \
                    "FROM sale_order sale JOIN sale_order_line line ON sale.id = line.order_id " \
-                   "WHERE sale.state = 'draft' and sale.partner_id = %s and sale.date_livraison <= %s ", (partner_id,date_max,))
+                   "WHERE sale.state = 'draft' and sale.partner_id = %s and sale.date_expedition <= %s ", (partner_id,date_max,))
         result = cr.fetchall()
         res = []
         if result:
