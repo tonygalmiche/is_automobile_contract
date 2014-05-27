@@ -88,7 +88,23 @@ class is_generate_picking_out(osv.osv_memory):
                 order_obj.unlink(cr, uid, [sale_id], context=context)
             else:
                 pass
-        return True                  
+        return True
+        
+        
+    def get_date_livraison(self, cr, uid, date_expedition, delai_transport, context=None):             
+        if delai_transport:
+            delai = delai_transport + 2
+            date = datetime.datetime.strptime(date_expedition, '%Y-%m-%d') + datetime.timedelta(days=delai)
+            date = date.strftime('%Y-%m-%d')
+            num_day = time.strftime('%w', time.strptime(date, '%Y-%m-%d'))
+            if int(num_day) <= delai_transport:
+                return date
+            else:                
+                date = datetime.datetime.strptime(date_expedition, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
+                date = date.strftime('%Y-%m-%d')
+                return date
+        else:
+            return date_expedition
                 
 
     def generate_picking(self, cr, uid, ids, context=None):
@@ -117,11 +133,16 @@ class is_generate_picking_out(osv.osv_memory):
             #create quotation
             quotation = sale_obj.onchange_partner_id(cr, uid, ids, data['partner_id'][0], context=context)['value']
             date_expedition = sale_obj.onchange_date_livraison(cr, uid, ids, data['expedition_date_max'], data['partner_id'][0], context=context)['value']['date_expedition']
+            
+            #Calcul de la date de livraison à partir de la date d'expédition
+            delai_transport = self.pool.get('res.partner').browse(cr, uid, data['partner_id'][0], context=context).delai_transport
+            date_livraison = self.get_date_livraison(cr, uid, data['expedition_date_max'], delai_transport, context=context)
+            
             quotation_values = {
                 'name': '/',
                 'partner_id': data['partner_id'][0],
-                'date_livraison': data['expedition_date_max'],
-                'date_expedition': date_expedition,
+                'date_livraison': date_livraison,
+                'date_expedition': data['expedition_date_max'],
                 'order_line': lines,
                 'picking_policy': 'direct',
                 'order_policy': 'manual',
