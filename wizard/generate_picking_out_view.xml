@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <form string="Generer Bon de Livraison" version="7.0">
                     <group>
-					    <field name="partner_id" on_change="onchange_quotations(partner_id,expedition_date_max)" />
+					    <field name="partner_id" domain="[('customer','=',True),('is_company','=',True)]" on_change="onchange_quotations(partner_id,expedition_date_max)" />
 						<field name="expedition_date_max" on_change="onchange_quotations(partner_id,expedition_date_max)" />
 						<field name="picking_date" />
                         <field name="quotation_lines">
