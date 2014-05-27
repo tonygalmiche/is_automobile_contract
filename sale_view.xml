@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+	
+		<menuitem name="Ventes"
+            id="menu_is_ventes"
+			parent="menu_is_contrat"
+			sequence="1"/>
+	
+        <record id="sale_order_automobile_view" model="ir.ui.view">
+            <field name="name">sale.order.automobile.view</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='currency_id']" position="after">
+					<field name="contract_id" />
+                    <field name="type_contrat" />
+					<field name="date_livraison"  on_change="onchange_date_livraison(date_livraison,partner_id)"/>
+					<field name="date_expedition" />
+                </xpath>
+            </field>
+        </record>
+		
+		<menuitem action="sale.action_quotations" id="menu_is_action_quotations" string="Devis" parent="menu_is_ventes" sequence="1"/>
+		<menuitem action="sale.action_orders" id="menu_is_action_orders" string="Bons de commande" parent="menu_is_ventes" sequence="2"/>
+
+    </data>
+</openerp>
+

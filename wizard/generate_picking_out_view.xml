@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_contract_generate_picking" model="ir.ui.view">
+            <field name="name">contract.generate.picking.form</field>
+            <field name="model">is.picking.out</field>
+            <field name="arch" type="xml">
+                <form string="Generer Bon de Livraison" version="7.0">
+                    <group>
+					    <field name="partner_id" on_change="onchange_quotations(partner_id,delivery_date_max)" />
+						<field name="delivery_date_max" on_change="onchange_quotations(partner_id,delivery_date_max)" />
+						<field name="picking_date" />
+                        <field name="quotation_lines">
+                            <form string="Devis" version="7.0">
+                                <group>
+									<field name="product_id" />
+									<field name="quantity" />
+                                    <field name="date_expedition" />
+									<field name="date_livraison" />
+								</group>
+							</form>
+                            <tree string="Devis" editable="bottom">
+                                <field name="product_id" />
+								<field name="quantity" />
+                                <field name="date_expedition" />
+								<field name="date_livraison" />
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button string='Generate picking' name="generate_picking" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Annuler" class="oe_link" special="cancel"/>
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+        <record id="action_generate_picking" model="ir.actions.act_window">
+            <field name="name">Generer Bon de livraison</field>
+            <field name="res_model">is.picking.out</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+           <field name="view_id" ref="view_contract_generate_picking"/>
+           <field name="target">new</field>
+        </record>
+		
+		<menuitem action="action_generate_picking" id="menu_action_generate_picking" parent="menu_is_contrat_contrat" sequence="2"/>
+
+
+    </data>
+</openerp>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_contract_generate_quotations" model="ir.ui.view">
+            <field name="name">contract.generate.quotations.form</field>
+            <field name="model">contract.quotations</field>
+            <field name="arch" type="xml">
+                <form string="Generer les devis" version="7.0">
+                    <group>
+					    <field name="partner_id" />
+						<field name="product_id" />
+						<field name="delai_transport" />
+                        <field name="contract_lines">
+                            <form string="Lignes de contrat" version="7.0">
+                                <group>
+                                    <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport)" />
+									<field name="date_expedition" />
+									<field name="type" />
+									<field name="quantity" />
+								</group>
+							</form>
+                            <tree string="Lignes de contract" editable="bottom">
+                                <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport)" />
+								<field name="date_expedition" />
+								<field name="type" />
+								<field name="quantity" />
+                            </tree>
+                        </field>
+                    </group>
+					<group>
+						<field name="affichage" on_change="onchange_affichage(affichage, partner_id, product_id)"/>
+					</group>
+                    <footer>
+                        <button string='Generer les devis' name="generate_quotations" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Annuler" class="oe_link" special="cancel"/>
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+        <record id="action_generate_quotations" model="ir.actions.act_window">
+            <field name="name">Generer les devis</field>
+            <field name="res_model">contract.quotations</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+           <field name="view_id" ref="view_contract_generate_quotations"/>
+           <field name="target">new</field>
+        </record>
+
+
+    </data>
+</openerp>

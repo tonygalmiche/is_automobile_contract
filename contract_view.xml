@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+	
+		<menuitem name="Gestion des contrats"
+            id="menu_is_contrat"
+			sequence="10"/>
+		
+		<menuitem name="Contrats"
+            id="menu_is_contrat_contrat"
+			parent="menu_is_contrat"
+			sequence="2"/>
+	
+		<!-- tree contract automobile -->
+        <record id="contract_automobile_tree" model="ir.ui.view">
+            <field name="name">contract.automobile.tree</field>
+            <field name="model">contract.automobile</field>
+			<field name="arch" type="xml">
+                <tree string="Contrats">
+                    <field name="name"/>
+                    <field name="partner_id" />
+                    <field name="ref_partner" />
+					<field name="product_id" />
+					<field name="ref_product" />
+                </tree>
+            </field>
+        </record>
+		
+		<!-- form contract automobile -->
+		<record id="contract_automobile_form" model="ir.ui.view">
+            <field name="name">contract.automobile.form</field>
+            <field name="model">contract.automobile</field>
+            <field name="arch" type="xml">
+                <form string="Contrat" version="7.0">
+				<header>
+                        <button name="action_done" states="open" string="Terminer Contrat" type="object"/>
+                        <button name="action_cancel" states="open" string="Annuler Contrat" type="object"/>
+						<button name="%(action_generate_quotations)d" string="Generer Devis"
+                            type="action" states="open" class="oe_highlight"/>
+                        <button name="action_reopen_contract" states="cancel,close" string="Reouvrir Contrat" type="object" />
+                        <field name="state" widget="statusbar" statusbar_visible="open,finished,cancel" />
+                </header>
+                <sheet>
+                    <label for="name" class="oe_edit_only"/>
+                    <h1><field name="name"/></h1>
+                    <group name="contrat">
+                        <group>
+                            <field name="partner_id" domain="[('customer','=','True')]"/>
+                            <field name="ref_partner" />
+                        </group>
+                        <group>
+                            <field name="product_id" />
+                            <field name="ref_product" />
+                        </group>
+                    </group>
+				</sheet>
+                </form>
+           </field>
+        </record>
+		
+		<!-- action de la fenetre -->
+		<record id="action_contract_automobile_form" model="ir.actions.act_window">
+            <field name="name">Contrats</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">contract.automobile</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="contract_automobile_tree"/>
+        </record>
+		
+		<menuitem action="action_contract_automobile_form" id="menu_action_contract_automobile_form" parent="menu_is_contrat_contrat" sequence="1"/>
+
+    </data>
+</openerp>
+
