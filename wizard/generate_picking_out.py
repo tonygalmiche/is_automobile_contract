@@ -37,9 +37,14 @@ class is_generate_picking_out(osv.osv_memory):
     _description = "Generate picking out"
     _columns = {
         'partner_id': fields.many2one('res.partner', 'Client', required=True),
-        'delivery_date_max': fields.date('Date de livraison maxi', required=True),
+        'expedition_date_max': fields.date('Date expedition maxi', required=True),
         'picking_date': fields.date('Date de bon de livraison', required=True),
         'quotation_lines': fields.one2many('is.quotation.line', 'picking_id', 'Commandes', required=True),
+    }
+    
+    _defaults = {
+        'expedition_date_max': fields.date.context_today,
+        'picking_date': fields.date.context_today,
     }
 
     def get_quotations(self, cr, uid, partner_id, date_max, context=None):
@@ -111,11 +116,11 @@ class is_generate_picking_out(osv.osv_memory):
 
             #create quotation
             quotation = sale_obj.onchange_partner_id(cr, uid, ids, data['partner_id'][0], context=context)['value']
-            date_expedition = sale_obj.onchange_date_livraison(cr, uid, ids, data['delivery_date_max'], data['partner_id'][0], context=context)['value']['date_expedition']
+            date_expedition = sale_obj.onchange_date_livraison(cr, uid, ids, data['expedition_date_max'], data['partner_id'][0], context=context)['value']['date_expedition']
             quotation_values = {
                 'name': '/',
                 'partner_id': data['partner_id'][0],
-                'date_livraison': data['delivery_date_max'],
+                'date_livraison': data['expedition_date_max'],
                 'date_expedition': date_expedition,
                 'order_line': lines,
                 'picking_policy': 'direct',
