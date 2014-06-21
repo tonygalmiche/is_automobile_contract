@@ -1,16 +1,28 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
+    	<menuitem name="Clients"
+            id="menu_is_clients"
+			parent="menu_is_contrat"
+			sequence="5"/>
+			
+			
         <record id="res_partner_delai_transport_view" model="ir.ui.view">
             <field name="name">res.partner.delai_transport.view</field>
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_form" />
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='date']" position="after">
-                    <field name="delai_transport" />
+                <xpath expr="//page[@string='Sales &amp; Purchases']" position="after">
+                	<page string="Contrat">
+                		<group name="commandes" string="Commandes Ouvertes" >
+                    		<field name="delai_transport" />
+                    	</group>
+                    </page>
                 </xpath>
             </field>
         </record>
+        
+        <menuitem id="menu_is_res_partner_form" parent="menu_is_clients" action="base.action_partner_form" sequence="1"/>
 
     </data>
 </openerp>

@@ -145,7 +145,7 @@ class contract_generate_quotations(osv.osv_memory):
                         'type_contrat': line.type,
                         'date_livraison': line.date_livraison,
                         'date_expedition': line.date_expedition,
-                        'origin': contract.name,
+                        'origin': contract.ref_partner + ', ' + contract.ref_product,
                         'order_line': [[0,False,quotation_line]],
                         'picking_policy': 'direct',
                         'order_policy': 'manual',

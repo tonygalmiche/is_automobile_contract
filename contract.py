@@ -18,18 +18,11 @@ class contract_automobile(osv.osv):
     _name = "contract.automobile"
     _description = "Contrats de secteur automobile"
     _columns = {
-        'name': fields.char('Nom', size=64, required=True),
         'partner_id': fields.many2one('res.partner', 'Client', required=True),
         'product_id': fields.many2one('product.product', 'Produit', required=True),
-        'ref_partner': fields.char('Reference Client', size=64, required=True),
+        'ref_partner': fields.char('Reference Client', size=64),
         'ref_product': fields.char('Reference Produit', size=64, required=True),
         'company_id': fields.many2one('res.company', 'Company', required=False),
-        'state': fields.selection([
-            ('open', 'Ouvert'),
-            ('close', 'Ferme'),
-            ('cancel', 'Annule'),
-            ], 'Status', readonly=True, track_visibility='onchange', select=True),
-
     }
 
     _sql_constraints = [
@@ -38,21 +31,9 @@ class contract_automobile(osv.osv):
 
     
     _defaults = {
-        'state': 'open',
         'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'contract.automobile', context=c),
     }
-
-
-    def action_done(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'state': 'close'}, context=context)
-
-    def action_cancel(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'state': 'cancel'}, context=context)
-
-    def action_reopen_contract(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'state': 'open'}, context=context)
-
-    
+   
 
 contract_automobile()
     

@@ -5,7 +5,7 @@
 		<menuitem name="Ventes"
             id="menu_is_ventes"
 			parent="menu_is_contrat"
-			sequence="1"/>
+			sequence="10"/>
 	
         <record id="sale_order_automobile_view" model="ir.ui.view">
             <field name="name">sale.order.automobile.view</field>

@@ -19,13 +19,12 @@ class is_quotation_line(osv.osv_memory):
     _name = "is.quotation.line"
     _description = "Commandes"
     _columns = {
-        'date_livraison': fields.date('Date Livraison', readonly=True, required=True),
-        'date_expedition': fields.date('Date Expedition', readonly=True, required=True),
+        'date_livraison': fields.date('Date Livraison', required=True),
+        'date_expedition': fields.date('Date Expedition', required=True),
         'product_id': fields.many2one('product.product', 'Produit', required=True),
         'picking_id': fields.many2one('is.picking.out', 'Reference', required=True, ondelete='cascade', select=True, readonly=True),
         'quantity': fields.float('Quantite'),
-        'sale_id': fields.integer('ID devis', readonly=True),
-        'line_id': fields.integer('ID line', readonly=True),
+        'sale_id': fields.integer('ID devis', readonly=True)
     }
 
 is_quotation_line()
@@ -37,20 +36,15 @@ class is_generate_picking_out(osv.osv_memory):
     _description = "Generate picking out"
     _columns = {
         'partner_id': fields.many2one('res.partner', 'Client', required=True),
-        'expedition_date_max': fields.date('Date expedition maxi', required=True),
+        'delivery_date_max': fields.date('Date de livraison maxi', required=True),
         'picking_date': fields.date('Date de bon de livraison', required=True),
         'quotation_lines': fields.one2many('is.quotation.line', 'picking_id', 'Commandes', required=True),
     }
-    
-    _defaults = {
-        'expedition_date_max': fields.date.context_today,
-        'picking_date': fields.date.context_today,
-    }
 
     def get_quotations(self, cr, uid, partner_id, date_max, context=None):
-        cr.execute("SELECT line.product_id, line.product_uom_qty, sale.date_expedition, sale.date_livraison, sale.id, line.id " \
+        cr.execute("SELECT line.product_id, line.product_uom_qty, sale.date_expedition, sale.date_livraison, sale.id " \
                    "FROM sale_order sale JOIN sale_order_line line ON sale.id = line.order_id " \
-                   "WHERE sale.state = 'draft' and sale.partner_id = %s and sale.date_expedition <= %s ", (partner_id,date_max,))
+                   "WHERE sale.state = 'draft' and sale.partner_id = %s and sale.date_livraison = %s ", (partner_id,date_max,))
         result = cr.fetchall()
         res = []
         if result:
@@ -61,7 +55,6 @@ class is_generate_picking_out(osv.osv_memory):
                     'date_expedition': item[2],
                     'date_livraison': item[3],
                     'sale_id': item[4],
-                    'line_id': item[5],
                 }
                 res.append(vals)
         return res
@@ -73,39 +66,7 @@ class is_generate_picking_out(osv.osv_memory):
         else:
             v['quotation_lines'] = []
         return {'value': v}
-
-    def clean_quotations(self, cr, uid, sale_id, line_id, qty, context=None):
-        order_line_obj = self.pool.get('sale.order.line')
-        order_obj = self.pool.get('sale.order')
-
-        line = order_line_obj.browse(cr, uid, line_id, context=context)
-        if qty < line.product_uom_qty:
-            diff = line.product_uom_qty - qty
-            order_line_obj.write(cr, uid, [line_id], {'product_uom_qty': diff}, context=context)
-        else:
-            order_line_obj.unlink(cr, uid, [line_id], context=context)
-            if len(order_obj.browse(cr, uid, sale_id, context=context).order_line) == 0:
-                order_obj.unlink(cr, uid, [sale_id], context=context)
-            else:
-                pass
-        return True
-        
-        
-    def get_date_livraison(self, cr, uid, date_expedition, delai_transport, context=None):             
-        if delai_transport:
-            delai = delai_transport + 2
-            date = datetime.datetime.strptime(date_expedition, '%Y-%m-%d') + datetime.timedelta(days=delai)
-            date = date.strftime('%Y-%m-%d')
-            num_day = time.strftime('%w', time.strptime(date, '%Y-%m-%d'))
-            if int(num_day) <= delai_transport:
-                return date
-            else:                
-                date = datetime.datetime.strptime(date_expedition, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
-                date = date.strftime('%Y-%m-%d')
-                return date
-        else:
-            return date_expedition
-                
+    
 
     def generate_picking(self, cr, uid, ids, context=None):
         quotation_obj = self.pool.get('is.picking.out')
@@ -122,27 +83,24 @@ class is_generate_picking_out(osv.osv_memory):
 
         if data:
             lines = []
+            sale_ids = []
             for line in quotation_line_obj.browse(cr, uid, data['quotation_lines'], context=context):
                 quotation_line = order_line_obj.product_id_change(cr, uid, ids, 1, line.product_id.id, 0, False, 0, False, '', data['partner_id'][0], False, True, False, False, False, False, context=context)['value']
                 quotation_line.update({'product_id':line.product_id.id, 'product_uom_qty': line.quantity})
                 lines.append([0,False,quotation_line])
-
-                #Nettoyage des devis
-                self.clean_quotations(cr, uid, line.sale_id, line.line_id, line.quantity, context=context)
+                if not line.sale_id in sale_ids:
+                    sale_ids.append(line.sale_id)
+                else:
+                    continue
 
             #create quotation
             quotation = sale_obj.onchange_partner_id(cr, uid, ids, data['partner_id'][0], context=context)['value']
-            date_expedition = sale_obj.onchange_date_livraison(cr, uid, ids, data['expedition_date_max'], data['partner_id'][0], context=context)['value']['date_expedition']
-            
-            #Calcul de la date de livraison à partir de la date d'expédition
-            delai_transport = self.pool.get('res.partner').browse(cr, uid, data['partner_id'][0], context=context).delai_transport
-            date_livraison = self.get_date_livraison(cr, uid, data['expedition_date_max'], delai_transport, context=context)
-            
+            date_expedition = sale_obj.onchange_date_livraison(cr, uid, ids, data['delivery_date_max'], data['partner_id'][0], context=context)['value']['date_expedition']
             quotation_values = {
                 'name': '/',
                 'partner_id': data['partner_id'][0],
-                'date_livraison': date_livraison,
-                'date_expedition': data['expedition_date_max'],
+                'date_livraison': data['delivery_date_max'],
+                'date_expedition': date_expedition,
                 'order_line': lines,
                 'picking_policy': 'direct',
                 'order_policy': 'manual',
@@ -152,6 +110,9 @@ class is_generate_picking_out(osv.osv_memory):
             quotation.update(quotation_values)
             sale_id = sale_obj.create(cr, uid, quotation, context=context)
             res1 = sale_obj.action_button_confirm(cr, uid, [sale_id], context=context)
+
+            #Supprimer les devis utilisés dans l'assistant pour créer la commande de vente
+            sale_obj.unlink(cr, uid, sale_ids, context=context)
             
 
             # Mettre à jour la date de création de bon de livraison et afficher le bon de livraison
@@ -162,4 +123,8 @@ class is_generate_picking_out(osv.osv_memory):
 
             return result
                                         
-is_generate_picking_out()
+is_generate_picking_out()                
+            
+
+        
+        

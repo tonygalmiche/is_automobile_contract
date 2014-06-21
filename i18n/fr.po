@@ -41,12 +41,12 @@ msgstr "Annulé"
 #. module: is_automobile_contract
 #: field:contract.automobile,ref_partner:0
 msgid "Reference Client"
-msgstr "Référence Client"
+msgstr "Référence commande client"
 
 #. module: is_automobile_contract
 #: field:contract.automobile,ref_product:0
 msgid "Reference Produit"
-msgstr "Référence Produit"
+msgstr "Référence produit client"
 
 #. module: is_automobile_contract
 #: field:contract.line,date_expedition:0
@@ -117,11 +117,6 @@ msgid "Date Expedition"
 msgstr "Date Expédition"
 
 #. module: is_automobile_contract
-#: field:is.quotation.line,quantity:0
-msgid "Quantite"
-msgstr "Quantité"
-
-#. module: is_automobile_contract
-#: field:is.picking.out,expedition_date_max:0
-msgid "Date expedition maxi"
-msgstr "Date d'expédition maxi"
+#: model:ir.ui.menu,name:is_automobile_contract.menu_is_res_partner_form
+msgid "Customers"
+msgstr "Clients"
