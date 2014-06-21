@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
-#
-#    Asma BOUSSELMI - CONSULTANT OPENERP CONFIRME
-#
-##############################################################################
 
 {
     'name': 'Gestion des contrats',
     'version': '1.0',
-    'category': 'Sales Management',
+    'category': 'InfoSaône',
     'description': """
-Gestion des contrats pour le secteur automobile
+Gestion des contrats (Commandes ouvertes) pour le secteur automobile
     """,
-    'author': 'Asma BOUSSELMI',
+    'author': 'Tony GALMICHE / Asma BOUSSELMI',
+    'maintainer': 'InfoSaône',
+    'website': 'http://www.infosaone.com',
     'depends': ['sale'],
     'data': [
         'wizard/generate_quotations_view.xml',
