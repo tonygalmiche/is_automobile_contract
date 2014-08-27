@@ -10,7 +10,7 @@ Gestion des contrats (Commandes ouvertes) pour le secteur automobile
     'author': 'Tony GALMICHE / Asma BOUSSELMI',
     'maintainer': 'InfoSaône',
     'website': 'http://www.infosaone.com',
-    'depends': ['sale'],
+    'depends': ['sale', 'is_resource_calendar'],
     'data': [
         'wizard/generate_quotations_view.xml',
         'contract_view.xml',

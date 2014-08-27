@@ -25,23 +25,45 @@ class contract_line(osv.osv_memory):
         'contract_id': fields.many2one('contract.quotations', 'Reference contrat', required=True, ondelete='cascade', select=True, readonly=True),
         'quantity': fields.float('Quantite'),
     }
+    
+    def check_date_livraison(self, cr, uid, ids, date_livraison,  partner_id, context=None):
+        order_obj = self.pool.get('sale.order')
+        if partner_id:
+            partner = self.pool.get('res.partner').browse(cr, uid, partner_id, context=context)
+            # jours de fermeture de la société
+            jours_fermes = order_obj.num_closing_days(cr, uid, partner, context=context)
+            # Jours de congé de la société
+            leave_dates = order_obj.get_leave_dates(cr, uid, partner, context=context)
+            # num de jour dans la semaine de la date de livraison
+            num_day = time.strftime('%w', time.strptime(date_livraison, '%Y-%m-%d'))
+            if int(num_day) in jours_fermes or date_livraison in leave_dates:
+                return False
+        return True
 
-
-    def onchange_date_livraison(self, cr, uid, ids, date_livraison, delai_transport, context=None):
+    def onchange_date_livraison(self, cr, uid, ids, date_livraison, delai_transport, partner_id, context=None):
         v = {}
-
+        warning = {}
+        
         if date_livraison:
             num_day = time.strftime('%w', time.strptime(date_livraison, '%Y-%m-%d'))
 
             if delai_transport:
                 if int(num_day) <= delai_transport:
                     delai_transport += 2
-                date = datetime.datetime.strptime(date_livraison, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
-                v['date_expedition'] = date.strftime('%Y-%m-%d')
-
+                    date = datetime.datetime.strptime(date_livraison, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
+                    v['date_expedition'] = date.strftime('%Y-%m-%d')
+                    
             else:
                 v['date_expedition'] = date_livraison
-        return {'value': v}
+                
+            check_date = self.check_date_livraison(cr, uid, ids, date_livraison, partner_id, context=context)
+            if not check_date:
+                warning = {
+                    'title': _('Warning!'),
+                    'message' : 'La date de livraison tombe pendant la fermeture du client.'
+                }
+        return {'value': v,
+                'warning': warning}
 
 contract_line()
 

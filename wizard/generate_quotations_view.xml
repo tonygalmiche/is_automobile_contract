@@ -14,14 +14,14 @@
                         <field name="contract_lines">
                             <form string="Lignes de contrat" version="7.0">
                                 <group>
-                                    <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport)" />
+                                    <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport, parent.partner_id)" />
 									<field name="date_expedition" />
 									<field name="type" />
 									<field name="quantity" />
 								</group>
 							</form>
                             <tree string="Lignes de contract" editable="bottom">
-                                <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport)" />
+                                <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport, parent.partner_id)" />
 								<field name="date_expedition" />
 								<field name="type" />
 								<field name="quantity" />
