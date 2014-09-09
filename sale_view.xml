@@ -15,7 +15,7 @@
                 <xpath expr="//field[@name='currency_id']" position="after">
 					<field name="contract_id" />
                     <field name="type_contrat" />
-					<field name="date_livraison"  on_change="onchange_date_livraison(date_livraison,partner_id)"/>
+					<field name="date_livraison"  on_change="onchange_date_livraison(date_livraison,partner_id, company_id)"/>
 					<field name="date_expedition" />
                 </xpath>
             </field>

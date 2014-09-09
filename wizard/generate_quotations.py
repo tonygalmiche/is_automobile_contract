@@ -39,31 +39,40 @@ class contract_line(osv.osv_memory):
             if int(num_day) in jours_fermes or date_livraison in leave_dates:
                 return False
         return True
-
-    def onchange_date_livraison(self, cr, uid, ids, date_livraison, delai_transport, partner_id, context=None):
+    
+    def onchange_date_livraison(self, cr, uid, ids, date_livraison, delai_transport, partner_id, company_id, context=None):
         v = {}
         warning = {}
-        
-        if date_livraison:
-            num_day = time.strftime('%w', time.strptime(date_livraison, '%Y-%m-%d'))
-
-            if delai_transport:
-                if int(num_day) <= delai_transport:
-                    delai_transport += 2
-                    date = datetime.datetime.strptime(date_livraison, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
-                    v['date_expedition'] = date.strftime('%Y-%m-%d')
-                    
-            else:
-                v['date_expedition'] = date_livraison
+        sale_obj = self.pool.get('sale.order')
+        if partner_id and date_livraison:
+            partner = self.pool.get('res.partner').browse(cr, uid, partner_id, context=context)
+            company = self.pool.get('res.company').browse(cr, uid, company_id, context=context)
+            
+            # jours de fermeture de la société
+            jours_fermes = sale_obj.num_closing_days(cr, uid, company.partner_id, context=context)
+            # Jours de congé de la société
+            leave_dates = sale_obj.get_leave_dates(cr, uid, company.partner_id, context=context)
                 
+            delai_transport = partner.delai_transport
+            if delai_transport:
+                date = datetime.datetime.strptime(date_livraison, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
+                date = date.strftime('%Y-%m-%d')
+                num_day = time.strftime('%w', time.strptime(date, '%Y-%m-%d'))
+                date_expedition = sale_obj.get_working_day(cr, uid, date, num_day, jours_fermes, leave_dates, context=context)         
+                v['date_expedition'] = date_expedition
+            else:
+                v['date_expedition'] = date_livraison 
+        
             check_date = self.check_date_livraison(cr, uid, ids, date_livraison, partner_id, context=context)
             if not check_date:
                 warning = {
-                    'title': _('Warning!'),
-                    'message' : 'La date de livraison tombe pendant la fermeture du client.'
-                }
+                            'title': _('Warning!'),
+                            'message' : 'La date de livraison tombe pendant la fermeture du client.'
+                    }
+        
         return {'value': v,
                 'warning': warning}
+
 
 contract_line()
 
@@ -75,6 +84,7 @@ class contract_generate_quotations(osv.osv_memory):
     _columns = {
         'contract_lines': fields.one2many('contract.line', 'contract_id', 'Lignes de contrat', required=True),
         'partner_id': fields.many2one('res.partner', 'Client', readonly=True),
+        'company_id': fields.many2one('res.company', 'Company', readonly=True),
         'product_id': fields.many2one('product.product', 'Produit', readonly=True),
         'delai_transport': fields.integer('Delai de transport', readonly=True),
         'affichage': fields.boolean('Afficher tous les devis existants'),
@@ -112,6 +122,8 @@ class contract_generate_quotations(osv.osv_memory):
         assert active_model in ('contract.automobile'), 'Bad context propagation'
         contract_id, = contract_ids
         contract = self.pool.get('contract.automobile').browse(cr, uid, contract_id, context=context)
+        if 'company_id' in fields:
+            res.update(company_id=contract.company_id.id)
         if 'partner_id' in fields:
             res.update(partner_id=contract.partner_id.id)
         if 'product_id' in fields:

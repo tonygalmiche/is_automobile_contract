@@ -14,7 +14,7 @@ class contract_automobile(osv.osv):
         'product_id': fields.many2one('product.product', 'Produit', required=True),
         'ref_partner': fields.char('Reference Client', size=64),
         'ref_product': fields.char('Reference Produit', size=64, required=True),
-        'company_id': fields.many2one('res.company', 'Company', required=False),
+        'company_id': fields.many2one('res.company', 'Company'),
     }
 
     _sql_constraints = [

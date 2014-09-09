@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <form string="Generer Bon de Livraison" version="7.0">
                     <group>
+                    	<field name="company_id" />
 					    <field name="partner_id" on_change="onchange_quotations(partner_id,delivery_date_max)" />
 						<field name="delivery_date_max" on_change="onchange_quotations(partner_id,delivery_date_max)" />
 						<field name="picking_date" />
