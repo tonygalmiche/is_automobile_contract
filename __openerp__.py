@@ -5,7 +5,7 @@
     'version': '1.0',
     'category': 'InfoSaône',
     'description': """
-Gestion des contrats (Commandes ouvertes) pour le secteur automobile
+Gestion des contrats de commandes ouvertes pour le secteur automobile
     """,
     'author': 'Tony GALMICHE / Asma BOUSSELMI',
     'maintainer': 'InfoSaône',
