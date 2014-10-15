@@ -19,6 +19,7 @@
 									<field name="quantity" />
                                     <field name="date_expedition" />
 									<field name="date_livraison" />
+									<field name="sale_id" invisible="1"/>
 								</group>
 							</form>
                             <tree string="Devis" editable="bottom">
@@ -26,6 +27,7 @@
 								<field name="quantity" />
                                 <field name="date_expedition" />
 								<field name="date_livraison" />
+								<field name="sale_id" invisible="1"/>
                             </tree>
                         </field>
                     </group>
