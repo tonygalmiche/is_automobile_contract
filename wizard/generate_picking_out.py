@@ -108,7 +108,7 @@ class is_generate_picking_out(osv.osv_memory):
                 'date_expedition': date_expedition,
                 'order_line': lines,
                 'picking_policy': 'direct',
-                'order_policy': 'manual',
+                'order_policy': 'picking',
                 'invoice_quantity': 'order',
             }
 

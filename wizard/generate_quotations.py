@@ -182,7 +182,7 @@ class contract_generate_quotations(osv.osv_memory):
                         'origin': contract.ref_partner + ', ' + contract.ref_product,
                         'order_line': [[0,False,quotation_line]],
                         'picking_policy': 'direct',
-                        'order_policy': 'manual',
+                        'order_policy': 'picking',
                         'invoice_quantity': 'order',
                     }
 
