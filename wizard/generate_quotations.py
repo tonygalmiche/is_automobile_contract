@@ -27,13 +27,13 @@ class contract_line(osv.osv_memory):
     }
     
     def check_date_livraison(self, cr, uid, ids, date_livraison,  partner_id, context=None):
-        order_obj = self.pool.get('sale.order')
+        is_api = self.pool.get('is.api')
         if partner_id:
             partner = self.pool.get('res.partner').browse(cr, uid, partner_id, context=context)
             # jours de fermeture de la société
-            jours_fermes = order_obj.num_closing_days(cr, uid, partner, context=context)
+            jours_fermes = is_api.num_closing_days(cr, uid, partner, context=context)
             # Jours de congé de la société
-            leave_dates = order_obj.get_leave_dates(cr, uid, partner, context=context)
+            leave_dates = is_api.get_leave_dates(cr, uid, partner, context=context)
             # num de jour dans la semaine de la date de livraison
             num_day = time.strftime('%w', time.strptime(date_livraison, '%Y-%m-%d'))
             if int(num_day) in jours_fermes or date_livraison in leave_dates:
@@ -43,22 +43,22 @@ class contract_line(osv.osv_memory):
     def onchange_date_livraison(self, cr, uid, ids, date_livraison, delai_transport, partner_id, company_id, context=None):
         v = {}
         warning = {}
-        sale_obj = self.pool.get('sale.order')
         if partner_id and date_livraison:
+            is_api = self.pool.get('is.api')
             partner = self.pool.get('res.partner').browse(cr, uid, partner_id, context=context)
             company = self.pool.get('res.company').browse(cr, uid, company_id, context=context)
             
             # jours de fermeture de la société
-            jours_fermes = sale_obj.num_closing_days(cr, uid, company.partner_id, context=context)
+            jours_fermes = is_api.num_closing_days(cr, uid, company.partner_id, context=context)
             # Jours de congé de la société
-            leave_dates = sale_obj.get_leave_dates(cr, uid, company.partner_id, context=context)
+            leave_dates = is_api.get_leave_dates(cr, uid, company.partner_id, context=context)
                 
             delai_transport = partner.delai_transport
             if delai_transport:
                 date = datetime.datetime.strptime(date_livraison, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
                 date = date.strftime('%Y-%m-%d')
                 num_day = time.strftime('%w', time.strptime(date, '%Y-%m-%d'))
-                date_expedition = sale_obj.get_working_day(cr, uid, date, num_day, jours_fermes, leave_dates, context=context)         
+                date_expedition = is_api.get_working_day(cr, uid, date, num_day, jours_fermes, leave_dates, context=context)         
                 v['date_expedition'] = date_expedition
             else:
                 v['date_expedition'] = date_livraison 

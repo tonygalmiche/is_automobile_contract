@@ -43,7 +43,7 @@ class is_generate_picking_out(osv.osv_memory):
     }
     
     _defaults = {
-        'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'contract.automobile', context=c),
+        'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'is.picking.out', context=c),
     }
 
     def get_quotations(self, cr, uid, partner_id, date_max, context=None):
@@ -119,7 +119,6 @@ class is_generate_picking_out(osv.osv_memory):
             #Supprimer les devis utilisés dans l'assistant pour créer la commande de vente
             sale_obj.unlink(cr, uid, sale_ids, context=context)
             
-
             # Mettre à jour la date de création de bon de livraison et afficher le bon de livraison
             # la date de création de bon de livraison = date de bon de livraison entrée dans le wizard
             result = sale_obj.action_view_delivery(cr, uid, [sale_id], context=context)
