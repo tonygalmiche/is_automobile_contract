@@ -20,10 +20,21 @@
                 </xpath>
             </field>
         </record>
+        
+        <record id="is_view_order_line_form2" model="ir.ui.view">
+            <field name="name">is.sale.order.line.form2</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.view_order_line_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="attributes">
+                     <attribute name="context">{'pricelist_id': parent.pricelist_id}</attribute>
+                </xpath>
+            </field>
+        </record>
 		
 		<menuitem action="sale.action_quotations" id="menu_is_action_quotations" string="Devis" parent="menu_is_ventes" sequence="1"/>
 		<menuitem action="sale.action_orders" id="menu_is_action_orders" string="Bons de commande" parent="menu_is_ventes" sequence="2"/>
-
+		
     </data>
 </openerp>
 

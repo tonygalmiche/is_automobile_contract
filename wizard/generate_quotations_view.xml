@@ -18,14 +18,14 @@
                                     <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport, parent.partner_id, parent.company_id)" />
 									<field name="date_expedition" />
 									<field name="type" />
-									<field name="quantity" />
+									<field name="quantity" on_change="onchange_product_qty(parent.product_id,quantity)"/>
 								</group>
 							</form>
                             <tree string="Lignes de contract" editable="bottom">
                                 <field name="date_livraison" on_change="onchange_date_livraison(date_livraison,parent.delai_transport, parent.partner_id, parent.company_id)" />
 								<field name="date_expedition" />
 								<field name="type" />
-								<field name="quantity" />
+								<field name="quantity" on_change="onchange_product_qty(parent.product_id,quantity)"/>
                             </tree>
                         </field>
                     </group>

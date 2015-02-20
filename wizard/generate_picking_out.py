@@ -26,6 +26,16 @@ class is_quotation_line(osv.osv_memory):
         'quantity': fields.float('Quantite'),
         'sale_id': fields.integer('ID devis', readonly=True)
     }
+    
+    def onchange_product_qty(self, cr, uid, ids, product_id, quantity, context=None):
+        print 'in *****'
+        val = {}
+        if product_id and quantity:
+            product = self.pool.get('product.product').browse(cr, uid, product_id, context)
+            qty = self.pool.get('sale.order.line').calcul_quantity(cr, uid, product, quantity, context)
+            print 'qty *****', qty
+            val['quantity'] = qty
+        return {'value': val}
 
 is_quotation_line()
 

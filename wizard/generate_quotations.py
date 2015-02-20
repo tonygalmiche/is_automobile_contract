@@ -54,14 +54,17 @@ class contract_line(osv.osv_memory):
             leave_dates = is_api.get_leave_dates(cr, uid, company.partner_id, context=context)
                 
             delai_transport = partner.delai_transport
+            date_expedition = date_livraison
             if delai_transport:
-                date = datetime.datetime.strptime(date_livraison, '%Y-%m-%d') - datetime.timedelta(days=delai_transport)
-                date = date.strftime('%Y-%m-%d')
-                num_day = time.strftime('%w', time.strptime(date, '%Y-%m-%d'))
-                date_expedition = is_api.get_working_day(cr, uid, date, num_day, jours_fermes, leave_dates, context=context)         
-                v['date_expedition'] = date_expedition
-            else:
-                v['date_expedition'] = date_livraison 
+                i = 0
+                while i < delai_transport:
+                    date = datetime.datetime.strptime(date_expedition, '%Y-%m-%d') - datetime.timedelta(days=1)
+                    date = date.strftime('%Y-%m-%d')
+                    num_day = time.strftime('%w', time.strptime(date, '%Y-%m-%d'))
+                    date_expedition = is_api.get_working_day(cr, uid, date, num_day, jours_fermes, leave_dates, context=context)         
+                    i += 1
+                
+            v['date_expedition'] = date_expedition
         
             check_date = self.check_date_livraison(cr, uid, ids, date_livraison, partner_id, context=context)
             if not check_date:
@@ -72,6 +75,16 @@ class contract_line(osv.osv_memory):
         
         return {'value': v,
                 'warning': warning}
+        
+        
+    def onchange_product_qty(self, cr, uid, ids, product_id, quantity, context=None):
+        val = {}
+        if product_id and quantity:
+            product = self.pool.get('product.product').browse(cr, uid, product_id, context)
+            qty = self.pool.get('sale.order.line').calcul_quantity(cr, uid, product, quantity, context)
+            print 'qty *****', qty
+            val['quantity'] = qty
+        return {'value': val}
 
 
 contract_line()
@@ -103,8 +116,8 @@ class contract_generate_quotations(osv.osv_memory):
         if result:
             for item in result:
                 vals = {
-                    'date_livraison': item[0],
-                    'date_expedition': item[1],
+                    'date_livraison': item[0] and item[0] or '',
+                    'date_expedition': item[1] and item[1] or '',
                     'type': item[2],
                     'quantity': item[3],                  
                 }
@@ -166,7 +179,7 @@ class contract_generate_quotations(osv.osv_memory):
                 for line_id in data['contract_lines']:
                     line = contract_line_obj.browse(cr, uid, line_id, context=context)
 
-                    quotation_line = order_line_obj.product_id_change(cr, uid, ids, 1, contract.product_id.id, 0, False, 0, False, '', contract.partner_id.id, False, True, False, False, False, False, context=context)['value']
+                    quotation_line = order_line_obj.product_id_change(cr, uid, ids, contract.pricelist_id.id, contract.product_id.id, 0, False, 0, False, '', contract.partner_id.id, False, True, False, False, False, False, context=context)['value']
                     quotation_line.update({'product_id':contract.product_id.id, 'product_uom_qty': line.quantity})
                     
                     quotation = sale_obj.onchange_partner_id(cr, uid, ids, contract.partner_id.id, context=context)['value']
@@ -179,7 +192,7 @@ class contract_generate_quotations(osv.osv_memory):
                         'type_contrat': line.type,
                         'date_livraison': line.date_livraison,
                         'date_expedition': line.date_expedition,
-                        'origin': contract.ref_partner + ', ' + contract.ref_product,
+                        'origin': contract.ref_partner and  contract.ref_partner + ', ' + contract.ref_product or contract.ref_product,
                         'order_line': [[0,False,quotation_line]],
                         'picking_policy': 'direct',
                         'order_policy': 'picking',

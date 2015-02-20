@@ -16,7 +16,7 @@
                             <form string="Devis" version="7.0">
                                 <group>
 									<field name="product_id" />
-									<field name="quantity" />
+									<field name="quantity" on_change="onchange_product_qty(product_id,quantity)"/>
                                     <field name="date_expedition" />
 									<field name="date_livraison" />
 									<field name="sale_id" invisible="1"/>
@@ -24,7 +24,7 @@
 							</form>
                             <tree string="Devis" editable="bottom">
                                 <field name="product_id" />
-								<field name="quantity" />
+								<field name="quantity" on_change="onchange_product_qty(product_id,quantity)"/>
                                 <field name="date_expedition" />
 								<field name="date_livraison" />
 								<field name="sale_id" invisible="1"/>

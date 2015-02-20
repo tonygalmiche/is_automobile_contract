@@ -11,6 +11,7 @@ class contract_automobile(osv.osv):
     _description = "Contrats de secteur automobile"
     _columns = {
         'partner_id': fields.many2one('res.partner', 'Client', required=True),
+        'pricelist_id': fields.many2one('product.pricelist', 'Liste de prix', readonly=True),
         'product_id': fields.many2one('product.product', 'Produit', required=True),
         'ref_partner': fields.char('Reference Client', size=64),
         'ref_product': fields.char('Reference Produit', size=64, required=True),
@@ -25,7 +26,15 @@ class contract_automobile(osv.osv):
     _defaults = {
         'company_id': lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'contract.automobile', context=c),
     }
-   
+    
+    def onchange_partner_id(self, cr, uid, ids, partner, context=None):
+        val = {}
+        if partner:
+            part = self.pool.get('res.partner').browse(cr, uid, partner, context=context)
+            pricelist = part.property_product_pricelist and part.property_product_pricelist.id or False
+            if pricelist:
+                val['pricelist_id'] = pricelist
+        return {'value': val}
 
 contract_automobile()
     

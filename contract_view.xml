@@ -38,11 +38,12 @@
                 <sheet>
                     <group name="contrat">
                         <group>
-                            <field name="partner_id" domain="[('customer','=','True')]"/>
+                            <field name="partner_id" domain="[('customer','=','True')]" on_change="onchange_partner_id(partner_id)"/>
+                            <field domain="[('type','=','sale')]" name="pricelist_id" invisible="1" />
                             <field name="ref_partner" />
                         </group>
                         <group>
-                            <field name="product_id" />
+                            <field name="product_id" context="{'pricelist': pricelist_id}"/>
                             <field name="ref_product" />
                         </group>
                     </group>
